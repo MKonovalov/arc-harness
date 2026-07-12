@@ -64,41 +64,41 @@ fi
 # Always try downloading arc-evolve so evolved skills are available even when
 # identity is already baked into the harness image.
 arc_EVOLVE_DIR="/tmp/arc-evolve"
-rm -rf "$arc_EVOLVE_DIR" /tmp/arc-evolve.tar.gz
-mkdir -p "$arc_EVOLVE_DIR"
+rm -rf "$ARC_EVOLVE_DIR" /tmp/arc-evolve.tar.gz
+mkdir -p "$ARC_EVOLVE_DIR"
 
 echo "→ Downloading arc-evolve context..."
 if gh api "repos/MKonovalov/arc-evolve/tarball/main" > /tmp/arc-evolve.tar.gz 2>/dev/null; then
-    tar xzf /tmp/arc-evolve.tar.gz -C "$arc_EVOLVE_DIR" --strip-components=1
+    tar xzf /tmp/arc-evolve.tar.gz -C "$ARC_EVOLVE_DIR" --strip-components=1
     rm -f /tmp/arc-evolve.tar.gz
 
     # If no pre-built identity exists, generate one from arc-evolve.
     if [ -z "$SYSTEM_FILE" ]; then
         mkdir -p ".arc/identity"
-        if [ -f "$arc_EVOLVE_DIR/scripts/arc_context.sh" ]; then
-            arc_REPO="$arc_EVOLVE_DIR" source "$arc_EVOLVE_DIR/scripts/arc_context.sh"
-            echo "$arc_CONTEXT" > ".arc/identity/SOUL.md"
+        if [ -f "$ARC_EVOLVE_DIR/scripts/arc_context.sh" ]; then
+            arc_REPO="$arc_EVOLVE_DIR" source "$ARC_EVOLVE_DIR/scripts/arc_context.sh"
+            echo "$ARC_CONTEXT" > ".arc/identity/SOUL.md"
             SYSTEM_FILE=".arc/identity/SOUL.md"
             echo "  Identity loaded ($(wc -l < "$SYSTEM_FILE" | tr -d ' ') lines)"
         fi
     fi
 
     # Extract evolved skills into the shared pool.
-    if [ -d "$arc_EVOLVE_DIR/skills" ]; then
+    if [ -d "$ARC_EVOLVE_DIR/skills" ]; then
         EVOLVED_SKILLS="/tmp/arc-evolved-skills"
         rm -rf "$EVOLVED_SKILLS"
-        cp -r "$arc_EVOLVE_DIR/skills" "$EVOLVED_SKILLS"
+        cp -r "$ARC_EVOLVE_DIR/skills" "$EVOLVED_SKILLS"
         SKILL_COUNT=$(find "$EVOLVED_SKILLS" -name "SKILL.md" | wc -l | tr -d ' ')
         echo "  Evolved skills loaded ($SKILL_COUNT skills from arc-evolve)"
     fi
-    rm -rf "$arc_EVOLVE_DIR"
+    rm -rf "$ARC_EVOLVE_DIR"
 else
     if [ -z "$SYSTEM_FILE" ]; then
         echo "  WARNING: Failed to download identity. Running without system prompt."
     else
         echo "  WARNING: Failed to download evolved skills."
     fi
-    rm -rf "$arc_EVOLVE_DIR" /tmp/arc-evolve.tar.gz
+    rm -rf "$   " /tmp/arc-evolve.tar.gz
 fi
 
 # ── Legacy: shared skills from Docker image (unused with run-agent.sh) ──
