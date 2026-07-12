@@ -1,0 +1,6 @@
+name = "architect"
+description = "Tech lead — breaks down hard issues that the build agent can't solve"
+timeout = 1200
+model = "claude-opus-4-6"
+
+shared_skills = ["gh-cli", "communicate"]

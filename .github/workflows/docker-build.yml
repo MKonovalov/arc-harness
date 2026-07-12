@@ -1,0 +1,76 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly rebuild (Mondays) to pick up arc-evolve updates
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: arc-evolve
+
+      - name: Download arc identity
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          mkdir -p identity
+          arc_EVOLVE_DIR="/tmp/arc-evolve"
+          mkdir -p "$arc_EVOLVE_DIR"
+
+          if gh api "repos/MKonovalov/arc-evolve/tarball/main" > /tmp/arc-evolve.tar.gz 2>/dev/null; then
+              tar xzf /tmp/arc-evolve.tar.gz -C "$arc_EVOLVE_DIR" --strip-components=1
+              rm -f /tmp/arc-evolve.tar.gz
+
+              if [ -f "$arc_EVOLVE_DIR/scripts/arc_context.sh" ]; then
+                  arc_REPO="$arc_EVOLVE_DIR" source "$arc_EVOLVE_DIR/scripts/arc_context.sh"
+                  echo "$arc_CONTEXT" > "identity/SOUL.md"
+                  echo "Identity built ($(wc -l < identity/SOUL.md) lines)"
+              else
+                  echo "WARNING: arc_context.sh not found"
+                  echo "# Identity not available at build time" > identity/SOUL.md
+              fi
+
+              rm -rf "$arc_EVOLVE_DIR"
+          else
+              echo "WARNING: Failed to download arc-evolve"
+              echo "# Identity not available at build time" > identity/SOUL.md
+          fi
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/MKonovalov/arc-harness:latest
+            ghcr.io/MKonovalov/arc-harness:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

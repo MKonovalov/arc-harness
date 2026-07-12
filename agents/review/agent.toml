@@ -1,0 +1,6 @@
+name = "review"
+description = "Code reviewer — reviews PRs for correctness, quality, and craft"
+timeout = 900
+model = "claude-opus-4-6"
+
+shared_skills = ["gh-cli", "git-ops"]

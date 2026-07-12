@@ -1,0 +1,6 @@
+name = "build"
+description = "Implementation agent — claims issues, writes code, opens PRs"
+timeout = 2400
+model = "claude-opus-4-6"
+
+shared_skills = ["gh-cli", "git-ops", "communicate", "web-research"]

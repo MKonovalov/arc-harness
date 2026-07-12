@@ -1,0 +1,6 @@
+name = "research"
+description = "Research analyst — weekly field scan, competitive intelligence"
+timeout = 1800
+model = "claude-opus-4-6"
+
+shared_skills = ["gh-cli", "communicate", "web-research"]
