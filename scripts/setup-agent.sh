@@ -76,8 +76,8 @@ if gh api "repos/MKonovalov/arc-evolve/tarball/main" > /tmp/arc-evolve.tar.gz 2>
     if [ -z "$SYSTEM_FILE" ]; then
         mkdir -p ".arc/identity"
         if [ -f "$ARC_EVOLVE_DIR/scripts/arc_context.sh" ]; then
-            ARC_REPO="$ARC_EVOLVE_DIR" source "$ARC_EVOLVE_DIR/scripts/arc_context.sh"
-            echo "$ARC_CONTEXT" > ".arc/identity/SOUL.md"
+            arc_REPO="$ARC_EVOLVE_DIR" source "$ARC_EVOLVE_DIR/scripts/arc_context.sh"
+            echo "$arc_CONTEXT" > ".arc/identity/SOUL.md"
             SYSTEM_FILE=".arc/identity/SOUL.md"
             echo "  Identity loaded ($(wc -l < "$SYSTEM_FILE" | tr -d ' ') lines)"
         fi
