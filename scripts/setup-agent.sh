@@ -63,7 +63,7 @@ fi
 
 # Always try downloading arc-evolve so evolved skills are available even when
 # identity is already baked into the harness image.
-arc_EVOLVE_DIR="/tmp/arc-evolve"
+ARC_EVOLVE_DIR="/tmp/arc-evolve"
 rm -rf "$ARC_EVOLVE_DIR" /tmp/arc-evolve.tar.gz
 mkdir -p "$ARC_EVOLVE_DIR"
 
