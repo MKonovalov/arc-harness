@@ -28,14 +28,9 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-# Install arc binary (latest release)
-RUN REPO="MKonovalov/arc-evolve" \
-    && LATEST=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | jq -r '.tag_name') \
-    && curl -fsSL "https://github.com/$REPO/releases/download/$LATEST/arc-$LATEST-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/arc.tar.gz \
-    && tar xzf /tmp/arc.tar.gz -C /tmp \
-    && cp /tmp/arc /usr/local/bin/arc || cp /tmp/arc-*/arc /usr/local/bin/arc \
-    && chmod +x /usr/local/bin/arc \
-    && rm -rf /tmp/arc*
+# Install arc binary (binary downloaded in CI from private arc-evolve repo, see docker-build.yml)
+COPY arc-bin/arc /usr/local/bin/arc
+RUN chmod +x /usr/local/bin/arc
 
 # Copy harness scripts, agents, skills, and identity
 COPY scripts/ /opt/arc/scripts/

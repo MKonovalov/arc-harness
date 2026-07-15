@@ -54,6 +54,18 @@ jobs:
               echo "# Identity not available at build time" > identity/SOUL.md
           fi
 
+      - name: Download arc binary
+        env:
+          GH_TOKEN: ${{ steps.bot-token.outputs.token }}
+        run: |
+          TAG=$(gh api repos/MKonovalov/arc-evolve/releases/latest --jq '.tag_name')
+          echo "Latest arc-evolve release: $TAG"
+          mkdir -p arc-bin
+          gh release download "$TAG" -R MKonovalov/arc-evolve -p "arc-${TAG}-x86_64-unknown-linux-gnu.tar.gz" --dir arc-bin
+          tar xzf arc-bin/arc-${TAG}-x86_64-unknown-linux-gnu.tar.gz -C arc-bin
+          rm -f arc-bin/arc-${TAG}-x86_64-unknown-linux-gnu.tar.gz
+          test -x arc-bin/arc && echo "arc binary ready ($(arc-bin/arc --version 2>/dev/null || echo version unknown))"
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
