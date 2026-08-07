@@ -27,6 +27,36 @@ if [ -z "${REPO:-}" ]; then
 fi
 
 MODEL="${MODEL:-claude-opus-4-6}"
+
+# ── Resolve provider/fallback from arc-models (authoritative when unset) ──
+# arc-action (PR #4) injects PROVIDER/FALLBACK_PROVIDER env. If present, we
+# honor them and skip self-resolution. If absent, centralize here: clone
+# arc-models (private repo — needs GH_TOKEN) and run arc-resolve-model to pick
+# a healthy primary + fallback. Fail-soft: on any error (no token, unreachable,
+# parse failure) we keep the current MODEL default and empty provider/fallback,
+# so the agent never fails just because model routing can't be resolved.
+PROVIDER="${PROVIDER:-}"
+FALLBACK_PROVIDER="${FALLBACK_PROVIDER:-}"
+if [ -z "$PROVIDER" ] && command -v python3 >/dev/null 2>&1 && command -v git >/dev/null 2>&1; then
+  _am_dir="$(mktemp -d)/arc-models"
+  if git clone --quiet --depth 1 "https://x-access-token:${GH_TOKEN:-}@github.com/MKonovalov/arc-models.git" "$_am_dir" 2>/dev/null \
+     && [ -f "$_am_dir/config.yml" ]; then
+    _resolved="$(ARC_MODELS_CONFIG="$_am_dir/config.yml" python3 "$_am_dir/resolver/arc-resolve-model" 2>/dev/null)" || _resolved=""
+    if [ -n "$_resolved" ]; then
+      # arc-resolve-model emits: MODEL=... PROVIDER=... FALLBACK_PROVIDER=...
+      eval "$_resolved"
+      MODEL="${MODEL:-claude-opus-4-6}"
+      echo "  [models] resolved from arc-models: PROVIDER=${PROVIDER} MODEL=${MODEL} FALLBACK=${FALLBACK_PROVIDER}"
+    else
+      echo "  [models] arc-models resolution returned empty — using defaults" >&2
+    fi
+  else
+    echo "  [models] arc-models clone failed (missing GH_TOKEN or unreachable) — using defaults" >&2
+  fi
+  rm -rf "$_am_dir" 2>/dev/null || true
+fi
+export MODEL PROVIDER FALLBACK_PROVIDER
+
 BOT_LOGIN="${BOT_LOGIN:-arc[bot]}"
 BOT_SLUG="${BOT_SLUG:-arc}"
 DATE=$(date -u +%Y-%m-%d)
@@ -129,6 +159,8 @@ run_agent() {
     # shellcheck disable=SC2086
     ${TIMEOUT_CMD:+$TIMEOUT_CMD "$timeout_val"} arc \
         --model "$MODEL" \
+        ${PROVIDER:+--provider "$PROVIDER"} \
+        ${FALLBACK_PROVIDER:+--fallback "$FALLBACK_PROVIDER"} \
         ${SYSTEM_FILE:+--system-file "$SYSTEM_FILE"} \
         --skills .arc/skills \
         ${SHARED_SKILLS:+--skills "$SHARED_SKILLS"} \
