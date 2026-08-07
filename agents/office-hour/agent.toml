@@ -1,6 +1,5 @@
 name = "office-hour"
 description = "Product curator — triages issues with taste and judgment"
 timeout = 900
-model = "claude-opus-4-6"
 
 shared_skills = ["gh-cli", "communicate"]
