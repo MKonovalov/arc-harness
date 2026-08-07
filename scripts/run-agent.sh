@@ -23,7 +23,9 @@ fi
 AGENT_TOML="$AGENT_DIR/agent.toml"
 TIMEOUT=$(parse_toml_value "$AGENT_TOML" "timeout" "900")
 AGENT_MODEL=$(parse_toml_value "$AGENT_TOML" "model" "$MODEL")
-export MODEL="$AGENT_MODEL"
+AGENT_PROVIDER=$(parse_toml_value "$AGENT_TOML" "provider" "$PROVIDER")
+AGENT_FALLBACK=$(parse_toml_value "$AGENT_TOML" "fallback" "$FALLBACK_PROVIDER")
+export MODEL="$AGENT_MODEL" PROVIDER="$AGENT_PROVIDER" FALLBACK_PROVIDER="$AGENT_FALLBACK"
 
 echo "Agent: $AGENT_NAME | Timeout: ${TIMEOUT}s | Model: $AGENT_MODEL"
 
